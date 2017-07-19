@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+		html, body, #mapBox{
+			width:100%;
+			height:100%;
+			margin:0;
+			padding:0;
+		}
+
+		/*避免bootstrap样式污染*/
+		#mapContainer label{
+			max-width:100px;
+		}
+
+		/*地图工具栏样式*/
+
+
+		/*地图搜索结果面板样式*/
+		.searchResultBox{
+		    box-sizing: border-box;
+		    min-width:300px;
+		    max-width:368px;
+		    max-height:85%;
+		    overflow: auto;
+		    padding: 0;
+		    margin: 0;
+		    position:absolute;
+		    top:85px;
+		    left:20px;
+		    z-index:999;
+		    border: 0;
+		    background-color:#fff;
+		    box-shadow: 1px 2px 1px rgba(0,0,0,.15);
+		    pointer-events: auto;
+		}
+		.searchResultBox .result{
+		    padding:10px;
+		}
+
+		.searchResultBox ul{
+		    margin:0;
+		    padding:0;
+		    list-style:none;
+		}
+
+		.searchResultBox li{
+		    padding:6px 0;
+		    cursor:pointer;
+		    clear:both;
+		}
+
+		.searchResultBox li:hover{
+		    background-color:#f6f6f6;
+		}
+
+		.searchResultBox li .marker{
+		    display: inline-block;
+		    float: left;
+		    width: 21px;
+		    height: 32px;
+		    background-image: url(mappins.png);
+		    margin: 3px 10px 3px 0px;
+		}
+
+		.searchResultBox li .no1{
+		    background-position: -0px 0px;
+		}
+
+		.searchResultBox li:hover .no1{
+		    background-position: -0px -66px;
+		}
+
+		.searchResultBox li .no2{
+		    background-position: -21px 0px;
+		}
+
+		.searchResultBox li:hover .no2{
+		    background-position: -21px -66px;
+		}
+
+		.searchResultBox li .no3{
+		    background-position: -42px 0px;
+		}
+
+		.searchResultBox li:hover .no3{
+		    background-position: -42px -66px;
+		}
+
+		.searchResultBox li .no4{
+		    background-position: -63px 0px;
+		}
+
+		.searchResultBox li:hover .no4{
+		    background-position: -63px -66px;
+		}
+
+		.searchResultBox li .no5{
+		    background-position: -84px 0px;
+		}
+
+		.searchResultBox li:hover .no5{
+		    background-position: -84px -66px;
+		}
+
+		.searchResultBox li .no6{
+		    background-position: -105px 0px;
+		}
+
+		.searchResultBox li:hover .no6{
+		    background-position: -105px -66px;
+		}
+
+		.searchResultBox li .no7{
+		    background-position: -126px 0px;
+		}
+
+		.searchResultBox li:hover .no7{
+		    background-position: -126px -66px;
+		}
+
+		.searchResultBox li .no8{
+		    background-position: -147px 0px;
+		}
+
+		.searchResultBox li:hover .no8{
+		    background-position: -147px -66px;
+		}
+
+		.searchResultBox li .no9{
+		    background-position: -168px 0px;
+		}
+
+		.searchResultBox li:hover .no9{
+		    background-position: -168px -66px;
+		}
+
+		.searchResultBox li .no10{
+		    background-position: -189px 0px;
+		}
+
+		.searchResultBox li:hover .no10{
+		    background-position: -189px -66px;
+		}
+
+		.searchResultBox .searchinfo{
+		    display: inline-block;
+		    max-width: 300px;
+		}
+
+		.searchResultBox .poiTitle{
+		    font-size:12px;
+		    color :#3385ff;
+		}
+
+		.searchResultBox .poiAddress{
+		    font-size:12px;
+		    color :#666;
+		}
+
+		.searchResultBox .page{
+		    padding: 2px 0 12px 0;
+		    text-align: center;
+		    line-height: 12px;
+		    font-size: 13px;
+		}
+
+		.searchResultBox a{
+		    display:inline-block;
+		    padding: 5px 6px 3px;
+		    margin:0 2px;
+		    border: #e7ecf0 solid 1px;
+		    outline: 0;
+		    cursor: pointer;
+		}
+
+		.searchResultBox .curPage{
+		    background-color:#3385ff;
+		    font-weight:bold;
+		    color:#eef;
+		}
+
+		/*地图搜索框样式*/
+		.mapSearchBox{
+		    box-sizing: border-box;
+		    width:368px;
+		    height:35px;
+		    padding: 0;
+		    margin: 0;
+		    position:absolute;
+		    top:20px;
+		    right:20px;
+		    z-index:999;
+		    border: 0;
+		    background-color:#fff;
+		    box-shadow: 1px 2px 1px rgba(0,0,0,.15);
+		    pointer-events: auto;
+		}
+
+		.mapSearchBox input{
+		    box-sizing: border-box;
+		    float: left;
+		    width: 368px;
+		    height: 36px;
+		    text-indent:20px;
+		    outline: 0;
+		    border:0;
+		    color: #333;
+		    font-size: 14px;
+		}
+
+	</style>
+</head>
+<body>
+	<div id="mapBox"></div>
+	<script src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+	<script src="http://api.map.baidu.com/api?v=2.0&ak=C854d64933dc70aee374c039f876d923"></script>
+	<script>
+		var map = new BMap.Map("mapBox", {enableMapClick: false, minZoom: 14, maxZoom: 18});
+		map.disableDoubleClickZoom();
+		map.setCurrentCity('南京');
+		map.centerAndZoom(new BMap.Point(118.7786111111111, 32.04388888888889), 15);
+		map.enableScrollWheelZoom(true);
+	</script>
+	<script>
+	</script>
+	<script>
+
+		var poiMarkersManager = {
+
+			div : null,
+
+			lis: null,
+
+			poiTitles: null,
+
+			poiAddresses: null,
+
+			pageDiv: null,
+
+			//存储关键词
+			keywords : '',
+
+			//存储城市名称
+			cityName : '',
+
+			//存储markers信息
+			markers:[],
+
+			//存储POI信息
+			pois:[],
+
+			//常用ICON
+			icons : (function(){
+				var icons = [];
+				for (var i = 0; i < 10; i++) {
+					icons.push([]);
+					for (var j = 0; j < 3; j+=2) {
+						icons[i].push(new BMap.Icon("mappins.png", new BMap.Size(21, 32), {
+							imageOffset :　new BMap.Size(-21*i, -33*j)
+						}));
+					}
+				}
+				return icons;
+			})(),
+
+			init : function(){
+				this.div = document.createElement("div");
+	
+				this.div.id = "mapSearchResultBox";
+				this.div.style.display="none";
+				this.div.className  = "searchResultBox";
+
+				var html = '<div class="result"><ul>';
+				for (var i = 0; i < 10; i++) {
+					html += '<li data-searchindex="' + i + '"><div class="marker no' + (i+1) + '"></div><div class="searchinfo"><span class="poiTitle"></span><br><span class="poiAddress"></span></div></li>';
+				}
+				html += '</ul></div>';
+
+				html += '<div class="page"></div>';
+
+				this.div.innerHTML = html;
+				
+				this.lis = this.div.getElementsByTagName("li");
+
+				this.poiTitles = this.div.getElementsByClassName("poiTitle");
+
+				this.poiAddresses = this.div.getElementsByClassName("poiAddress");
+
+				this.pageDiv = this.div.getElementsByClassName("page")[0];
+
+				
+				this.pageDiv.addEventListener('click',function(event){
+					var node = event.target || event.srcElement;
+					if((node.nodeType == 1) && (node.nodeName == 'A')){
+						var pageNum = node.getAttribute('data-pageindex');
+						poiMarkersManager.search(poiMarkersManager.keywords, pageNum, poiMarkersManager.cityName);
+					}
+				});
+
+				for (var i = 0; i < 10; i++) {
+					this.lis[i].addEventListener('mouseover',function(){
+						var index = this.getAttribute('data-searchindex');
+						var marker = poiMarkersManager.markers[index];
+						marker.setIcon(poiMarkersManager.icons[index][1]);
+						marker.setTop(true);
+					});
+					this.lis[i].addEventListener('mouseout',function(){
+						var index = this.getAttribute('data-searchindex');
+						var marker = poiMarkersManager.markers[index];
+						marker.setIcon(poiMarkersManager.icons[index][0]);
+						marker.setTop(false);
+					});
+					this.lis[i].addEventListener('click',function(){
+						var index = this.getAttribute('data-searchindex');
+						var position = poiMarkersManager.markers[index].getPosition();
+						map.panTo(new BMap.Point(position. lng,position.lat));
+					});
+					this.lis[i].addEventListener('dblclick',function(){
+						alert('调用生成事件方法!');
+					});
+				};
+
+				map.getContainer().appendChild(this.div);
+
+			},
+
+			search : function(keywords, pageNum, cityName){
+				this.close();
+				if((keywords == '') && (this.keywords == '')){
+					return;
+				}
+				if(keywords !== ''){
+					this.keywords = keywords;
+				}
+				
+				var params = {
+					q : this.keywords,
+					page_num :　pageNum
+				};
+
+				if(cityName == undefined || cityName == ''){
+					this.cityName = '';
+					var bounds = map.getBounds();
+					var swpoint = bounds.getSouthWest();
+					var nepoint = bounds.getNorthEast();
+					params.bounds = swpoint.lat + "," + swpoint.lng + "," + nepoint.lat + "," + nepoint.lng;
+				}else{
+					this.cityName = cityName;
+					params.region = cityName;
+				}
+
+				var searchurl = "http://api.map.baidu.com/place/v2/search?ak=C854d64933dc70aee374c039f876d923&output=json";
+				$.ajax({
+					type : "post",
+					dataType : "jsonp",
+					data : params,
+					url : searchurl
+				}).done(function(data){
+					if(data.message == "ok"){
+						if(data.results.length == 0){
+							return;
+						}else{
+							poiMarkersManager.pois = data.results;
+						}
+						poiMarkersManager.build(data.results, data.total, pageNum);
+						poiMarkersManager.open();
+					}
+				});
+			},
+
+			open : function(){
+				this.div.style.display = 'block';
+			},
+
+			close : function(){
+				this.div.style.display = 'none';
+				while(this.markers.length){
+					map.removeOverlay(this.markers.pop());
+				}
+				this.pois = [];
+			},
+
+			build : function(pois, _total, _pageNum){
+				//渲染列表
+				for (var i = 0; i < pois.length; i++) {
+					this.poiTitles[i].innerHTML = pois[i].name;
+					this.poiAddresses[i].innerHTML = pois[i].address;
+					this.lis[i].style.display = "block";
+					//添加标注
+					var marker = new BMap.Marker(this.pois[i].location, {
+						icon : this.icons[i][0]
+					});
+					this.markers.push(marker);
+					map.addOverlay(marker);
+				}
+				for (var j = i ; j < 10; j++) {
+					this.lis[j].style.display = "none";
+				}
+				//渲染页码
+				var pageCounts = Math.ceil(_total / 10);
+				var pageNum = (_pageNum || 0);
+				var start = 0, end = pageCounts;
+				if(pageCounts > 5){
+					if(pageNum < 4){
+						end = 5;
+					}else if(pageNum > pageCounts - 4){
+						start = pageCounts - 5;
+						end = pageCounts;
+					}else{
+						start = pageNum - 2;
+						end = pageNum + 2;
+					}
+				}
+				var html = '<a data-pageindex="0">首页</a>';
+				for(var i = start; i < end; i++){
+					html += '<a ' + (i == pageNum ? 'class="curPage"' : '')  + ' data-pageindex="' + i + '">' + (i+1) + '</a>';
+				}
+				html += '<a data-pageindex="' + (pageCounts - 1) + '">末页</a>';
+				this.pageDiv.innerHTML = html;
+			}
+
+		};
+
+		poiMarkersManager.init();
+
+		//右上角搜索框
+		$('<div class="mapSearchBox">'
+				+ '<input id="autoSearchInput" type="text" placeholder="请输入检索词...">'
+			+ '</div>').appendTo($(map.getContainer()));
+
+		$("#autoSearchInput").bind("keydown", function(event){
+			event.keyCode==13 && poiMarkersManager.search($(this).val(), 0, '');
+		});
+
+		//设置自动提示
+		new BMap.Autocomplete({
+			"input" : "autoSearchInput",
+			"location" : map
+		}).addEventListener("onconfirm", function(e) {    //鼠标点击下拉列表后的事件
+			var _value = e.item.value;
+			var myValue = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
+
+			poiMarkersManager.search(myValue, 0, '南京');
+		});
+
+	</script>
+</body>
+</html>
