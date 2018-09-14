@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="http://cdn.static.runoob.com/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=eYf9sA6yVTFHlh9ytU4a0EYY"></script>
+    <script type="text/javascript" src="http://api.map.baidu.com/library/LuShu/1.2/src/LuShu_min.js"></script>
+    <script src="javascripts/EmdcMaps.js"></script>
+    <script src="http://code.jquery.com/jquery-1.8.3.min.js"></script>
+    <style>
+    *{margin:0;padding:0;border:0;}
+    html,body{width:100;height:100%;font-size:14px;font-family:'微软雅黑';}
+    .container{width:100%;height:100%;overflow: hidden;display:flex}
+    .map-box{width:70%;height:100%;border:1px solid #6798c9;}
+    .management-box{width:auto;height:100%;padding-left:10px;overflow-y: scroll;}
+    .management-box h3{height:40px;line-height:40px;background-color:#6798c9;color:#fff;padding-left:20px;}
+    .management-box h4{height:40px;line-height:40px;}
+    .fl{float:left;}
+    .fr{float:right;}
+    #lng,#lat{width:78px;}
+    .management-form{margin-top:10px;border:1px solid #ddd;width:501px;padding:20px}
+    .management-form span{display: inline-block;}
+    input{padding:2px 5px;border:1px solid #0c88e8;margin-top:10px;}
+    .management-form th{width:80px;}
+    .management-form td{width:80px;text-align: center;}
+    .management-form table{margin-top:10px;}
+    .active{color:blue;}
+    .info-window-header {
+        border-bottom: solid 1px silver;
+        text-align: center;
+        font-size: 14px;
+    }
+    .info-window-content {
+        margin: 5px;
+    }
+    .info-window-content span {
+        font-size: 12px;
+    }
+    .info-window-content div {
+        display: inline-block;
+    }
+    .info-window-left {
+        width: 50%;
+    }
+    .info-window-right {
+        width: 50%;
+    }
+    .info-window-label {
+        display:inline-block;
+        margin-left:10px;
+        padding: 2px 4px;
+        margin-right: 5px;
+        text-align: center;
+        color: #fff;
+        /* text-shadow: 1px 1px 1px #222; */
+    }
+    .info-window-left .info-window-label {
+         background-color: #339933; 
+         margin-top:2px;
+        /*border: 1px solid #339933;*/
+    }
+    .info-window-right .info-window-label {
+        background-color: #ff2c00;
+    }
+    .info-window-footer {
+        padding-top: 5px;
+        border-top: solid 1px silver;
+        text-align: left;
+        font-size: 12px;
+    }
+    .wrap {
+        width: 100%;
+        height:70px;
+        margin-bottom:1px;
+        background:#fff;
+        position: fixed;        
+    }
+    .spinner {
+        width: 60px;
+        height: 60px;
+        background-color: #0c88e8;
+        margin: 100px auto;
+        -webkit-animation: rotateplane 1.2s infinite ease-in-out;
+        animation: rotateplane 1.2s infinite ease-in-out;
+        }
+ 
+        @-webkit-keyframes rotateplane {
+            0% { -webkit-transform: perspective(120px) }
+            50% { -webkit-transform: perspective(120px) rotateY(180deg) }
+            100% { -webkit-transform: perspective(120px) rotateY(180deg)  rotateX(180deg) }
+        }
+ 
+        @keyframes rotateplane {
+            0% {
+            transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+            -webkit-transform: perspective(120px) rotateX(0deg) rotateY(0deg)
+            } 50% {
+            transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+            -webkit-transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg)
+            } 100% {
+            transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+            -webkit-transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+            }
+        }
+    </style>
+    <title>保障点人员信息填写</title>
+</head>
+<body>
+    <div id="initLine" style="width:100%;height:100%;position:absolute;background:#000;opacity:0.6">
+        <h3 style="color:#fff;font-size:30px;margin-top:300px;text-align:center;font-family:'youyuan';">初始化马拉松线路</h3>
+        <div class="spinner"></div>
+    </div>
+    <div class="container" id="mainBox">      
+        <div class="map-box fr" id="mapContainer"></div>
+        <div class="management-box fl">
+            <h3>赛事人员管理</h3>
+            <h4>添加保障点</h4>
+            经度：<input type="text" id="lng" value="经度"/>
+            纬度：<input type="text" id="lat" value="纬度"/>
+             站点名称：<input type="text" style="width:70px;" id="newStationName"/>
+            <button style="padding:2px 4px;background:#ddd;border:1px solid #0c88e8;">添加</button>
+            <h4>添加人员</h4>
+            <form id="person" class="management-form" method='post'>
+                <span>姓       名：</span><input id="pName" name="name" type="text"/></br>
+                <span>电       话：</span><input id="pPhone" name="phone" type="text"/></br>
+                <span>人员类别：</span><input id="pType" name="persontype" type="text"/>
+                <span style="margin-left:30px">所属保障点</span>
+                <select name="" id="pStation">
+                    <option value="保障点1">保障点1</option>
+                    <option value="保障点2">保障点2</option>
+                    <option value="保障点3">保障点3</option>
+                    <option value="保障点4">保障点4</option>
+                </select>
+                <input id="btn1" type="button" value="添加"/>
+                <table id="tab1" border="0" style="">
+                    <thead>
+                        <th>保障点</th>
+                        <th>姓名</th>
+                        <th>电话</th>
+                        <th>类别</th>
+                        <th>操作</th>
+                    </thead>
+                    <tbody id="table-body1">
+                    </tbody>
+                </table>
+            </form>
+            <h4>添加车辆</h4>
+            <form id="driver" class="management-form" method='post'>
+                <span>司机姓名：</span><input id="dName" name="name" type="text"/></br>
+                <span>电       话：</span><input id="dPhone" name="phone" type="text"/></br>
+                <span>车牌号码：</span><input id="dLicence" name="persontype" type="text"/>
+                <span style="margin-left:30px">所属保障点</span>
+                <select name="" id="dStation" >
+                    <option value="保障点1">保障点1</option>
+                    <option value="保障点2">保障点2</option>
+                    <option value="保障点3">保障点3</option>
+                    <option value="保障点4">保障点4</option>
+                </select>
+                <input id="btn2" type="button" value="添加"/>
+                <table id="tab2" border="0" style="">
+                    <thead>
+                        <th>保障点</th>
+                        <th>车牌</th>
+                        <th>姓名</th>
+                        <th>电话</th>
+                        <th>操作</th>
+                    </thead>
+                    <tbody id="table-body2">
+                    </tbody>
+                </table>
+                <span style="margin-left:436px;margin-top:30px;padding:4px 16px;background:#ff4646;color:#fff;cursor:pointer;" id="driver-search">提交</span>
+            </form>
+        </div>        
+    </div>
+</body>
+</html>
+<script>
+// 地图对象
+var points = [{
+                Xcoordinate:'118.187432',
+                Ycoordinate:'24.475885'
+                },{
+                Xcoordinate:'118.189408',
+                Ycoordinate:'24.469957'
+                },{
+                Xcoordinate:'118.160851',
+                Ycoordinate:'24.444268'
+                },{
+                Xcoordinate:'118.158084',
+                Ycoordinate:'24.446748'
+                },{
+                Xcoordinate:'118.158929',
+                Ycoordinate:'24.445037'
+                },{
+                Xcoordinate:'118.146159',
+                Ycoordinate:'24.432388'
+                }];
+setTimeout(function (){
+    $("#initLine").show();
+    $(".container").show();
+    // 消失
+    timer=setTimeout(function (){
+       $("#initLine").hide();
+       $(".container").show();
+       $emdcMap.init("mapContainer",118.136798,24.461011);
+       $emdcMap.addMarathonPointsMarkers(points);
+       stationRead();
+       $emdcMap.addMarathonMarkers(stationsJson);
+    }, 2000);
+     
+}, 1000);
+$("#initLine").show();
+    $(".container").show();
+/*$emdcMap.addMarathonMarkers(stations);*/
+$("#btn1").on('click',function(){
+    $("<tr><td>"+$('#pStation').val()+"</td><td>"+$('#pName').val()+"</td><td>"+$('#pPhone').val()+"</td><td>"+$('#pType').val()+"</td><td>"+"<a href='javascript:;'>删除</a>"+"</td></tr>").appendTo("#table-body1");
+     
+});
+$("#btn2").on('click',function(){
+    $("<tr><td>"+$('#dStation').val()+"</td><td>"+$('#dName').val()+"</td><td>"+$('#dPhone').val()+"</td><td>"+$('#dLicence').val()+"</td><td>"+"<a href='javascript:;'>删除</a>"+"</td></tr>").appendTo("#table-body2");
+     
+});
+$("a").live("click",function(){
+        $(this).parent().parent().remove();
+});
+ 
+var newzd = {};
+var zdArray = new Array({name:"保障点1", Xcoordinate:'118.100196',Ycoordinate:'24.438523'},{name:"保障点2", Xcoordinate:'118.080681',Ycoordinate:'24.46918'},{name:"保障点3",Xcoordinate:'118.159799',Ycoordinate:'24.443507'},{name:"保障点4",Xcoordinate:'118.188603',Ycoordinate:'24.47725'});//站点数组
+ 
+var tb_person = document.getElementById("tab1");  //根据id找到站点人员这个表格
+var rows_person = tb_person.rows;               //取得这个table下的所有行
+ 
+var tb_car = document.getElementById("tab2");  //根据id找到站点车辆这个表格
+var rows_car = tb_car.rows;               //取得这个table下的所有行
+ 
+var stationsJson = new Array();//整个对象数组
+function newStationAdd(){
+    newzd.name = $("#newStationName").val();
+    newzd.Xcoordinate = $("#lng").val();
+    newzd.Ycoordinate = $("#lat").val();
+    newzd.person = new Array();
+    newzd.ambulence = new Array();
+    zdArray.push(newzd);
+    stationsJson.push(newzd);
+    $("<option>"+$("#newStationName").val()+"</option>").appendTo("select");
+    console.log(zdArray);
+};
+function stationRead(){
+   for(var i=0;i<zdArray.length;i++){
+        var stationsPoint = {};
+        var personList = new Array();//定义站点对应人员集合
+        var ambulenceList = new Array();//定义站点对应车辆集合
+        for(var j=1;j<rows_person.length;j++){
+        //循环添加站点对应人员形成的集合  
+            if(zdArray[i].name==rows_person[j].cells[0].innerText){
+                var songle_person={};
+                songle_person.stationName=rows_person[j].cells[0].innerText;
+                songle_person.pName=rows_person[j].cells[1].innerText;
+                songle_person.pPhone=rows_person[j].cells[2].innerText;
+                songle_person.pType=rows_person[j].cells[3].innerText;
+                personList.push(songle_person);
+            }
+        };
+        for(var k=1;k<rows_car.length;k++){//循环添加站点对应车辆形成的集合     
+            if(zdArray[i].name==rows_car[k].cells[0].innerText){
+                var songle_car={};
+                songle_car.ambLicense=rows_car[k].cells[1].innerText;
+                songle_car.ambName=rows_car[k].cells[2].innerText;
+                songle_car.ambPhone=rows_car[k].cells[3].innerText;
+                ambulenceList.push(songle_car);
+            }
+        };
+        stationsPoint.person = personList;
+        stationsPoint.ambulence = ambulenceList;
+        stationsPoint.Xcoordinate = zdArray[i].Xcoordinate;
+        stationsPoint.Ycoordinate = zdArray[i].Ycoordinate;
+        stationsPoint.name = zdArray[i].name;
+        stationsJson.push(stationsPoint);
+    };  
+};
+function addStationPerson(){
+    $emdcMap.clearStations(stationsJson);
+    var newstationsJson = new Array();
+    for(var i=0;i<zdArray.length;i++){
+            var newstationsPoint = {};
+            var personList = new Array();//定义站点对应人员集合
+            var ambulenceList = new Array();//定义站点对应车辆集合
+            for(var j=1;j<rows_person.length;j++){
+            //循环添加站点对应人员形成的集合  
+                if(zdArray[i].name==rows_person[j].cells[0].innerText){
+                    var songle_person={};
+                    songle_person.stationName=rows_person[j].cells[0].innerText;
+                    songle_person.pName=rows_person[j].cells[1].innerText;
+                    songle_person.pPhone=rows_person[j].cells[2].innerText;
+                    songle_person.pType=rows_person[j].cells[3].innerText;
+                    personList.push(songle_person);
+                }
+            };
+            for(var k=1;k<rows_car.length;k++){//循环添加站点对应车辆形成的集合     
+                if(zdArray[i].name==rows_car[k].cells[0].innerText){
+                    var songle_car={};
+                    songle_car.ambLicense=rows_car[k].cells[1].innerText;
+                    songle_car.ambName=rows_car[k].cells[2].innerText;
+                    songle_car.ambPhone=rows_car[k].cells[3].innerText;
+                    ambulenceList.push(songle_car);
+                }
+            };
+ 
+            for(var n = 0;n<personList.length;n++){
+               /* if(personList[n].stationName==stationsJson[i].name){
+                    stationsJson[i].person.push(personList[n]);    
+                }else{
+                    stationsJson.push(zdArray)
+                }*/
+                stationsJson[i].person.push(personList[n]);
+                                   
+            } 
+            for(var m = 0;m<ambulenceList.length;m++){
+                stationsJson[i].ambulence.push(ambulenceList[m]);
+            }                                      
+        }; 
+ 
+};
+$("button").on("click",function(){
+    newStationAdd();
+});
+$("#driver-search").on("click",function(){   
+   addStationPerson(); 
+   console.log("dataJson:",stationsJson);
+   $emdcMap.addMarathonMarkers(stationsJson);
+   $("#table-body2 tr").remove();
+   $("#table-body1 tr").remove();
+});
+</script>
