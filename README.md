@@ -1,2 +1,1 @@
-# marathon
-My personal library test
+# The browser opens the HTML file directly
